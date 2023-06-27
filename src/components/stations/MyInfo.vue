@@ -22,9 +22,6 @@ export default {
         }
     },
     computed: {
-        apiToken() {
-            return this.token != undefined ? this.token : process.env.VUE_APP_TOKEN;
-        },
         meResult() {
             return JSON.stringify(this.meResultJson, null, '\t');
         },
@@ -42,7 +39,7 @@ export default {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + this.apiToken
+                    'Authorization': 'Bearer ' + this.token
                 }
             })
                 .then(response => response.json())
@@ -54,7 +51,7 @@ export default {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + this.apiToken
+                    'Authorization': 'Bearer ' + this.token
                 }
             })
                 .then(response => response.json())
