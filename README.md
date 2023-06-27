@@ -1,13 +1,24 @@
 # st_demodoge
 
 ## Project setup
+
+Open the configured devcontainer, then do:
+
 ```
 npm install
 ```
 
+### Environment
+
+```
+cp .env.template .env.local
+```
+
+Then fill in the blanks in .env.local
+
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+vue serve
 ```
 
 ### Compiles and minifies for production
