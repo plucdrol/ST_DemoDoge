@@ -3,9 +3,14 @@
     <h1>SPACE TRADERS</h1>
   </div>
   <div class="api-stations">
-    <div class="status-container">
-      <button @click="toggleStatus">Toggle Status</button>
+    <div>
+      <button @click="toggleStatus">Status</button>
       <StatusBar v-show="enableStatus" />
+    </div>
+    <MyInfo />
+    <div>
+      <button @click="toggleRecruitment">Recruitment</button>
+      <RecruitmentStation v-show="enableRecruitment" />
     </div>
   </div>
 
@@ -15,59 +20,32 @@
       <button @click="getPlayground">Get Playground</button>
       <textarea class="json-result" v-model="playgroundResult" />
     </div>
-    <div class="register">
-      <h1>Register</h1>
-      <input type="text" v-model="symbol" placeholder="symbol" />
-      <input type="text" v-model="faction" placeholder="faction" />
-      <button @click="register">Register</button>
-      <textarea class="json-result" v-model="registerResult" />
-    </div>
-
-    <div class="me">
-      <h1>Me</h1>
-      <input type="text" v-model="token" placeholder="token" />
-      <button @click="getMyInfo">Get my info</button>
-      <div class="my-info-divs">
-        <textarea class="json-result" v-model="meResult" />
-        <textarea class="json-result" v-model="myContractsResult" />
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-import StatusBar from './StatusBar.vue'
+import MyInfo from './stations/MyInfo.vue';
+import RecruitmentStation from './stations/RecruitmentStation.vue';
+import StatusBar from './stations/StatusBar.vue';
 
 export default {
   name: 'SpaceTraders',
   components: {
+    MyInfo,
+    RecruitmentStation,
     StatusBar
   },
   data() {
     return {
+      enableRecruitment: false,
       enableStatus: false,
       playgroundResultJson: this.getPlayground(),
-      symbol: process.env.VUE_APP_SYMBOL,
-      faction: '',
-      registerResultJson: 'Not registered yet',
-      token: process.env.VUE_APP_TOKEN,
-      meResultJson: 'Not logged in yet',
-      myContractsResultJson: 'Not logged in yet'
     }
   },
 
   computed: {
     playgroundResult() {
       return JSON.stringify(this.playgroundResultJson, null, '\t');
-    },
-    registerResult() {
-      return JSON.stringify(this.registerResultJson, null, '\t');
-    },
-    meResult() {
-      return JSON.stringify(this.meResultJson, null, '\t');
-    },
-    myContractsResult() {
-      return JSON.stringify(this.myContractsResultJson, null, '\t');
     }
   },
 
@@ -85,49 +63,9 @@ export default {
         })
         .catch(error => console.error('Error (playground):', error));
     },
-    async register() {
-      this.registerResultJson = await fetch('https://api.spacetraders.io/v2/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          symbol: this.symbol,
-          faction: this.faction
-        })
-      })
-        .then(response => response.json())
-        .catch(error => console.error('Error (register):', error));
+    toggleRecruitment() {
+      this.enableRecruitment = !this.enableRecruitment;
     },
-
-    async getMyInfo() {
-      Promise.all(this.getMyAgent(), this.getMyContracts());
-    },
-
-    async getMyAgent() {
-      this.meResultJson = await fetch('https://api.spacetraders.io/v2/my/agent', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + this.token
-        }
-      })
-        .then(response => response.json())
-        .catch(error => console.error('Error (me):', error));
-    },
-
-    async getMyContracts() {
-      this.myContractsResultJson = await fetch('https://api.spacetraders.io/v2/my/contracts', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + this.token
-        }
-      })
-        .then(response => response.json())
-        .catch(error => console.error('Error (contracts):', error));
-    },
-
     toggleStatus() {
       this.enableStatus = !this.enableStatus;
     }
