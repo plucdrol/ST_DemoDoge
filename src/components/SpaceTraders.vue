@@ -2,7 +2,13 @@
   <div class="header">
     <h1>SPACE TRADERS</h1>
   </div>
-  <StatusBar />
+  <div class="api-stations">
+    <div class="status-container">
+      <button @click="toggleStatus">Toggle Status</button>
+      <StatusBar v-show="enableStatus" />
+    </div>
+  </div>
+
   <div class="api-stations">
     <div class="get-playground">
       <h1>Get Playground</h1>
@@ -39,6 +45,7 @@ export default {
   },
   data() {
     return {
+      enableStatus: false,
       playgroundResultJson: this.getPlayground(),
       symbol: process.env.VUE_APP_SYMBOL,
       faction: '',
@@ -120,6 +127,10 @@ export default {
         .then(response => response.json())
         .catch(error => console.error('Error (contracts):', error));
     },
+
+    toggleStatus() {
+      this.enableStatus = !this.enableStatus;
+    }
   }
 }
 </script>
