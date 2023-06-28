@@ -12,6 +12,11 @@
 
 <script>
 
+import { useAgentStore } from '@/store/agent';
+import { mapStores } from 'pinia';
+
+const agentStore = useAgentStore();
+
 export default {
     name: 'MyInfo',
     data() {
@@ -21,17 +26,22 @@ export default {
             myContractsResultJson: 'Load me'
         }
     },
+    mounted() {
+        this.agentStore.fetchMyAgent();
+    },
     computed: {
         meResult() {
-            return JSON.stringify(this.meResultJson, null, '\t');
+            return JSON.stringify(this.agentStore.myAgent, null, '\t');
         },
         myContractsResult() {
             return JSON.stringify(this.myContractsResultJson, null, '\t');
-        }
+        },
+        ...mapStores(agentStore)
     },
     methods: {
         async getMyInfo() {
-            this.meResultJson = await this.getMyAgent();
+            this.agentStore.fetchMyAgent(this.token);
+            
             this.myContractsResultJson = await this.getMyContracts();
         },
         async getMyAgent() {
