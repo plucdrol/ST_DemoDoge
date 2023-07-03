@@ -26,3 +26,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# TODO generate this package automatically in the app
+spacetraders-fetch-sdk/
