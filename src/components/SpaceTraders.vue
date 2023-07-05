@@ -1,19 +1,19 @@
 <script lang="ts">
 
-import { Configuration, DefaultApi, FactionSymbols, AgentsApi, ContractsApi, type Agent, type GetStatus200Response, type RegisterRequest, type Register201ResponseData, type Contract, FactionsApi, type Faction } from 'spacetraders-sdk'
+import { Configuration, DefaultApi, FactionSymbols, ContractsApi, type GetStatus200Response, type RegisterRequest, type Register201ResponseData, type Contract, FactionsApi, type Faction } from 'spacetraders-sdk'
 import { defineComponent } from 'vue'
+import { useTokenStore } from '@/stores/token'
 
 export default defineComponent({
   props: {
     basePath: {
       type: String,
       default: import.meta.env.VITE_SPACE_TRADERS_BASE_URL
-    },
-    token: {
-      type: String,
-      default: import.meta.env.VITE_SPACE_TRADERS_TOKEN
     }
   },
+  components: {
+    AgentInfo: () => import('./AgentInfo.vue')
+},
   data() {
     return {
       factions: [] as Faction[],
@@ -22,7 +22,6 @@ export default defineComponent({
         faction: '' as FactionSymbols
       },
       registerResult: {} as Register201ResponseData,
-      myAgent: {} as Agent,
       status: {} as GetStatus200Response,
       myContracts: [] as Contract[]
     }
@@ -30,24 +29,25 @@ export default defineComponent({
   mounted() {
     this.getStatus()
     this.getFactions()
-    this.getMyAgent()
     this.getMyContracts()
+  },
+  computed: {
+    token() {
+      return useTokenStore().getConfiguration()?.accessToken
+    },
+    myAgent() {
+      return () => import('@/services/AgentService').then(module => module.getMyAgent())
+    }
   },
   methods: {
     pretty(obj: any) {
       return JSON.stringify(obj, null, "\t")
     },
     createConfiguration() {
-      return new Configuration({
-        basePath: this.basePath,
-        accessToken: this.token
-      })
+      return useTokenStore().getConfiguration()
     },
     useDefaultApi() {
       return new DefaultApi(this.createConfiguration())
-    },
-    useAgentsApi() {
-      return new AgentsApi(this.createConfiguration())
     },
     useContractsApi() {
       return new ContractsApi(this.createConfiguration())
@@ -78,13 +78,6 @@ export default defineComponent({
         // TODO save token in env file then restart lol
       })
     },
-    getMyAgent() {
-      this.useAgentsApi().getMyAgent()
-        .then(data => {
-          console.log(data)
-          this.myAgent = data.data
-        })
-    },
     getMyContracts() {
       this.useContractsApi().getContracts()
         .then(data => {
@@ -96,7 +89,6 @@ export default defineComponent({
       this.useContractsApi().acceptContract({contractId: id})
         .then(data => {
           console.log(data)
-          this.getMyAgent()
           this.getMyContracts()
         })
     }
@@ -137,18 +129,11 @@ export default defineComponent({
         <button class="api-button" @click="register(registerRequest)">Register</button>
         <div class="register-result" v-if="registerResult.agent">
           <h3>Registered! Save the following token in .env.local then restart the app 😅</h3>
-          <div class="info-property">Token: {{ registerResult.token }}</div>
+          <div style="font-family: 'Courier New', Courier, monospace;">VITE_SPACE_TRADERS_TOKEN="{{ registerResult.token }}"</div>
           <div class="json-result">{{ pretty(registerResult) }}</div>
         </div>
       </div>
-      <div class="agent-info">
-        <h2>My Agent</h2>
-        <div class="info-property">Account ID: {{ myAgent.accountId }}</div>
-        <div class="info-property">Symbol: {{ myAgent.symbol }}</div>
-        <div class="info-property">Faction: {{ myAgent.startingFaction }}</div>
-        <div class="info-property">HQ: {{ myAgent.headquarters }}</div>
-        <div class="info-property">Credits: {{ myAgent.credits }}</div>
-      </div>
+      <AgentInfo :agent="myAgent" />
       <div class="contracts">
         <h2>My Contracts</h2>
         <div class="contract" v-for="contract in myContracts" :key="contract.id">
